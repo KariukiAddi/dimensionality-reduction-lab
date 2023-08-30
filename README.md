@@ -118,14 +118,14 @@ Currently all of the data is contained in a dataframe called `df`, where the tar
 # Replace None with appropriate code
 
 # Import the relevant function
-None
+from sklearn.model_selection import train_test_split
 
 # Separate X and y
-X = None
-y = None
+X = df.drop("target", axis=1)
+y = df["target"]
 
 # Perform train-test split with random_state=42
-X_train, X_test, y_train, y_test = None
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 ```
 
 Make sure your data has the appropriate shape before moving forward:
@@ -155,20 +155,20 @@ Use the `StandardScaler` class from scikit-learn ([documentation here](https://s
 ```python
 # Replace None with appropriate code
 
+```
 from sklearn.preprocessing import StandardScaler
 
 # Instantiate a scaler
-scaler = None
+scaler = StandardScaler()
 
 # Fit the scaler on X_train
-None
+scaler.fit(X_train)
 
-# Transform X_train and X_test. Go ahead and reuse the variable names 
-# "X_train" and "X_test" since we won't need the un-scaled data
-None
-None
+# Transform X_train and X_test
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 
-# Now the values should be scaled
+# Display the scaled values
 pd.DataFrame(X_train, columns=iris.feature_names)
 ```
 
@@ -178,13 +178,11 @@ In the cell below, instantiate a `LogisticRegression` model ([documentation here
 
 
 ```python
-# Replace None with appropriate code
-
-# Import the relevant class
-None
+# Import necessary modules from Scikit-Learn
+from sklearn.linear_model import LogisticRegression
 
 # Instantiate the model with random_state=42
-baseline_model = None
+baseline_model = LogisticRegression(random_state=42)
 baseline_model
 ```
 
@@ -193,15 +191,17 @@ Now fit the model on the training data and score it on the test data (using the 
 
 ```python
 # Replace None with appropriate code
+# Replace None with appropriate code
 import time
 
 start = time.time()
 
 # Fit the model on the training data
-None
+baseline_model.fit(X_train, y_train)
 
 # Score the model on the test data
-baseline_model_score = None
+baseline_model_score = baseline_model.score(X_test, y_test)
+
 
 end = time.time()
 baseline_time_taken = end - start
@@ -230,21 +230,21 @@ We'll set `n_components` to `2`, meaning that we will only keep the first two pr
 
 
 ```python
-# Replace None with appropriate code
-
 # Import the relevant class
-None
+from sklearn.decomposition import PCA
 
 # Instantiate the PCA transformer with n_components=2
-pca = None
+pca = PCA(n_components=2)
 
 # Fit the transformer on X_train
-None
+pca.fit(X_train)
 
-# Transform X_train and X_test. This time, create new
-# variables for the transformed data
-X_train_pca = None
-X_test_pca = None
+# Transform X_train and X_test
+X_train_pca = pca.transform(X_train)
+X_test_pca = pca.transform(X_test)
+
+# Display the transformed data
+pd.DataFrame(X_train_pca, columns=["PC 1", "PC 2"])
 ```
 
 Now, our PCA-transformed X values should have the same number of rows as before, but a different number of columns:
@@ -282,16 +282,14 @@ train_combined_pca
 
 
 ```python
-# Replace None with appropriate code
-
 # Rows of train_combined_pca where target is 0
-setosa = None
+setosa = train_combined_pca[train_combined_pca["target"] == 0]
 
 # Rows of train_combined_pca where target is 1
-versicolor = None
+versicolor = train_combined_pca[train_combined_pca["target"] == 1]
 
 # Rows of train_combined_pca where target is 2
-virginica = None
+virginica = train_combined_pca[train_combined_pca["target"] == 2]
 ```
 
 The code below checks that the dataframes have the correct length:
@@ -317,26 +315,24 @@ Notes:
 
 
 ```python
-# Replace None with appropriate code
-
 # Set up figure and axes
 fig, ax = plt.subplots(figsize=(10, 8))
 ax.grid()
 
 # Scatter plot of setosa (red)
-None
+ax.scatter(setosa["PC 1"], setosa["PC 2"], c='r', label="Setosa")
 
 # Scatter plot of versicolor (green)
-None
+ax.scatter(versicolor["PC 1"], versicolor["PC 2"], c='g', label="Versicolor")
 
 # Scatter plot of virginica (blue)
-None
+ax.scatter(virginica["PC 1"], virginica["PC 2"], c='b', label="Virginica")
 
 # Customize labels
-ax.set_xlabel('First Principal Component ', fontsize = 15)
-ax.set_ylabel('Second Principal Component ', fontsize = 15)
-ax.set_title('Principal Component Analysis (2 PCs) for Iris Dataset', fontsize = 20)
-ax.legend(iris.target_names, fontsize="large");
+ax.set_xlabel('First Principal Component', fontsize=15)
+ax.set_ylabel('Second Principal Component', fontsize=15)
+ax.set_title('Principal Component Analysis (2 PCs) for Iris Dataset', fontsize=20)
+ax.legend(iris.target_names, fontsize="large")
 ```
 
 ### Explained Variance
@@ -352,7 +348,7 @@ In the cell below, extract that information from `pca`:
 # Replace None with appropriate code
 
 # Extract the explained variance ratio from the pca object
-evr_all_components = None
+evr_all_components = pca.explained_variance_ratio_
 
 pc1_evr = evr_all_components[0]
 pc2_evr = evr_all_components[1]
@@ -386,11 +382,12 @@ Now, fit the model on `X_train_pca` instead of `X_train`, and evaluate it on `X_
 
 start = time.time()
 
-# Fit the model on the training data
-None
+# Fit the model on the PCA-transformed training data
+pca_model.fit(X_train_pca, y_train)
 
 # Score the model on the test data
-pca_model_score = None
+pca_model_score = pca_model.score(X_test_pca, y_test)
+
 
 end = time.time()
 pca_time_taken = end - start
@@ -537,4 +534,4 @@ ax.legend(iris.target_names, fontsize=15);
 
 ## Summary 
 
-In this lab, you applied PCA to the popular Iris Dataset in the context of a machine learning workflow. You looked at the performance of a simple classifier and the impact of PCA on the accuracy of the model and the time it took to run the model. You also used both PCA and isometric embedding to view higher-dimensional data in two dimensions, as well as the associated classifier decision boundaries.
+In this lab, I applied PCA to the popular Iris Dataset in the context of a machine learning workflow. I looked at the performance of a simple classifier and the impact of PCA on the accuracy of the model and the time it took to run the model. I also used both PCA and isometric embedding to view higher-dimensional data in two dimensions, as well as the associated classifier decision boundaries.
